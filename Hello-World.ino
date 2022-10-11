@@ -1,4 +1,5 @@
 //Maya Roman
+//John McDonough
 
 int buttonPin = 8;
 int LEDPin = 9;
