@@ -4,7 +4,7 @@
  * Created: 10/25/2022
  * Last Modified: 10/25/2022
  * 
- * Sandbox to make encoder function
+ * Sandbox to make encoder function. 
  */
  
 #include "Adafruit_seesaw.h"            //Seesaw library, used for function calls to interact with encoder
@@ -15,7 +15,11 @@
 //#define SS_NEOPIX 6                     //Required for the neopixel on the encoder board
 
 Adafruit_seesaw encoder;                //Initialize encoder object and an integer to assign the position to 
-int32_t encoderPos;
+
+int32_t encoderPos = 0;                 //variable to store position, initialized to 0;
+int32_t lastPos = 0;                    //variable to store position from last encoder measurement, initialized to 0;
+int32_t lastFullRot = 0;                //variable to store to encoder position when it crosses the full rotation threshold
+int8_t fullTurn = 24;                   //One full rotation of the encoder is 24 steps. 
 
 void setup() {
 
@@ -41,17 +45,43 @@ void setup() {
    * There isn't much documentation on this. I think the interrupt is active low. I'm not sure to change the threshold on which it fires. 
    */
   encoder.enableEncoderInterrupt();
-  
+
+  Serial.println("Encoder Interrupt Initialized.");
 
 }
 
 void loop() {
-  
+
+  encoderPos = encoder.getEncoderPosition();
+  Serial.print("Encoder Pos: ");
+  Serial.println(encoderPos);
+  Serial.print("Last Pos : ");
+  Serial.println(lastPos);
+  bool rot = readEncoderRotation();
+  Serial.print("Rotated? : ");
+  Serial.println(rot);
+  delay(1000);
 
 }
 
-bool readEncoder() {
+bool readEncoderRotation() {
 
+  bool fullRotation = false;  
+  encoderPos = encoder.getEncoderPosition();
+
+  if(encoderPos < lastPos) {      //prevent a backwards rotation 
+    Serial.println("Enter backwards rotation loop");
+    encoderPos = lastPos;
+  }
+
+  int threshold = lastFullRot + fullTurn;
   
+  if(encoderPos >= threshold) {
+    fullRotation = true;
+    lastFullRot = encoderPos;
+  }
+  lastPos = encoderPos;
+  
+  return fullRotation;
 
 }
