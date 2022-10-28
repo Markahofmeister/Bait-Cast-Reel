@@ -52,7 +52,6 @@ void setup() {
 
 void loop() {
 
-  encoderPos = encoder.getEncoderPosition();
   Serial.print("Encoder Pos: ");
   Serial.println(encoderPos);
   Serial.print("Last Pos : ");
@@ -60,27 +59,28 @@ void loop() {
   bool rot = readEncoderRotation();
   Serial.print("Rotated? : ");
   Serial.println(rot);
-  delay(1000);
+  Serial.println("");
+  delay(100);
 
 }
 
 bool readEncoderRotation() {
 
-  bool fullRotation = false;  
-  encoderPos = encoder.getEncoderPosition();
+  bool fullRotation = false;                    //initialize return flag to false
+  encoderPos = encoder.getEncoderPosition();    //find new encoder position 
 
-  if(encoderPos < lastPos) {      //prevent a backwards rotation 
-    Serial.println("Enter backwards rotation loop");
+  if(encoderPos < lastPos) {      //prevent a backwards rotation
+    Serial.println("Enter backwards rotation conditional");
     encoderPos = lastPos;
   }
 
-  int threshold = lastFullRot + fullTurn;
+  int threshold = lastFullRot + fullTurn;     //Threshold to find a full rotation is the last full rotation threshold plus one full rotation
   
-  if(encoderPos >= threshold) {
+  if(encoderPos >= threshold) {               //If we have passed the threshold of rotation, set flag
     fullRotation = true;
-    lastFullRot = encoderPos;
+    lastFullRot = encoderPos;               //Also update the lastFullRot
   }
-  lastPos = encoderPos;
+  lastPos = encoderPos;                     
   
   return fullRotation;
 
