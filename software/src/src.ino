@@ -36,6 +36,9 @@
   * Define cap-touch global variables 
   */
 
+
+  int inputWindow = 1000;                  //Start the input window length at 1000ms, which is the time allowed for a user input. Decreases with every iteration. 
+
 void setup() {
 
   Serial.begin(9600);                 //Baud rate may need to go to 115200
@@ -78,11 +81,33 @@ void setup() {
 
 void loop() {
 
-  
+  /*
+   * Random number generation:
+   * 1 - Bait - calls readBait() function
+   * 2 - Cast - calls readCast() function
+   * 3 - Reel - calls readReel() function
+   */
+  int randomNumber = floor(random(1,4));           //generates a random number in the range of 1 to 3
+
+  switch(randomNumber) {
+    
+    case 1:             //Bait It
+      
+      break;
+    case 2:             //Cast It
+
+      break;
+    case 3:             //Reel It 
+
+      break;
+    default:            //Should never reach default, but you know. 
+
+      break;
+  }
 
 }
 
-/* readEncoderRotation
+/* readReel()
  * Params: None
  * Retrns: Bool indicating whether the encoder was rotated one full rotation
  * 
@@ -90,7 +115,7 @@ void loop() {
  * 
  * Also disregards negative rotation.
  */
-bool readEncoderRotation() {
+bool readReel() {
 
   bool fullRotation = false;                    //initialize return flag to false
   encoderPos = encoder.getEncoderPosition();    //find new encoder position 
