@@ -24,7 +24,17 @@
     int32_t lastFullRot = 0;                //variable to store to encoder position when it crosses the full rotation threshold
     int8_t fullTurn = 24;                   //One full rotation of the encoder is 24 steps. 
 
+/*
+ * Define IMU global variables & object
+ */
 
+/*
+ * Define 7-seg global variables & object
+ */
+
+ /*
+  * Define cap-touch global variables 
+  */
 
 void setup() {
 
@@ -32,7 +42,7 @@ void setup() {
   while(!Serial) delay(10);           //Wait for serial monitor to initialize
 
   /*
-   * Initialize encoder object 
+   * Initialize encoder object & interrupts
   */
       Serial.println("Looking for encoder object");
       if (!encoder.begin(ENCODER_ADDR)) {
@@ -55,6 +65,14 @@ void setup() {
        encoder.enableEncoderInterrupt();
   
        Serial.println("Encoder Interrupt Initialized.");
+
+  /*
+   * Initialize IMU object & interrupts
+  */
+
+  /*
+   * Initialize 7-seg object 
+  */
 
 }
 
