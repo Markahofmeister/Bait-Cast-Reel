@@ -9,10 +9,13 @@
  
 #include "Adafruit_seesaw.h"            //Seesaw library, used for function calls to interact with encoder
 #include <Adafruit_LEDBackpack.h>       //Used to communicate I2C to Adafruit's "backpack" for 7-seg display. 
+ 
  /*
   * Define cap-touch global variables 
   */
-  
+    #define cap_touch_input 3               //pin 5
+    #define cap_touch_LED 5                 //pin 11
+    #define SEVSEG_ADDR 0x70                //define global I2C address of 7seg backpack 
 /*
  * Define IMU global variables & object
  */
@@ -35,9 +38,8 @@
 /*
  * Define 7-seg global variables & object
  */
-    #define cap_touch_input 3               //pin 5
-    #define cap_touch_LED 5                 //pin 11
     Adafruit_7segment sevSeg = Adafruit_7segment();   //initialize sevSeg object to interact with I2C backpack 
+    int scoreCount = 0;                               //score to display and increment as user successfully inputs
   
   int inputWindow = 1000;                  //Start the input window length at 1000ms, which is the time allowed for a user input. Decreases with every iteration. 
   int inputWindowDec = 5;                  //integer to decrement the inputWindow by each iteration 
@@ -79,7 +81,9 @@ void setup() {
   /*
    * Initialize 7-seg object 
   */
-
+      sevSeg.begin(SEVSEG_ADDR);
+      sevSeg.print(scoreCount);
+      sevSeg.writeDisplay();
 }
 
 void loop() {
@@ -101,12 +105,18 @@ void loop() {
         }*/
         delay(1);                                   // This is not a perfect timer, but it'll be close. 
       }
+
+      seven_seg(1);                                 //Increment counter
       break;
     case 2:             //Cast It
-
+      
+      
+      seven_seg(1);                                 //Increment counter
       break;
     case 3:             //Reel It 
 
+
+      seven_seg(1);                                 //Increment counter
       break;
     default:            //Should never reach default, but you know. 
 
@@ -147,4 +157,28 @@ bool readReel() {
   
   return fullRotation;
 
+}
+
+
+/* seven_seg(success_val)
+ * Params: bool to indicate a successul user input
+ * Retrns: none
+ * 
+ * Function to write the output of the seven segment display depending on a successul user input. 
+ * Increments if successul, displays score if not. 
+ */
+void seven_seg(bool success_val){ 
+  if(success_val){                  
+    scoreCount++;                             //increment count variable   
+    sevSeg.print(scoreCount);
+    sevSeg.writeDisplay();
+    delay(10);                                //Might have to adjust delays
+
+  }
+  else{                                   
+    sevSeg.print(scoreCount);
+    sevSeg.blinkRate(1);                      //Blinks the 7seg to indicate game over. 0 = no blink, 1,2,3 = varied blink rates. 
+    sevSeg.writeDisplay();
+    delay(10);                                //Might have to adjust delays
+  }
 }
