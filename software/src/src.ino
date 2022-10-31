@@ -13,12 +13,13 @@
  /*
   * Define cap-touch global variables 
   */
-    #define cap_touch_input 3               //pin 5
-    #define cap_touch_LED 5                 //pin 11
-    #define SEVSEG_ADDR 0x70                //define global I2C address of 7seg backpack 
+    #define capTouchInput 3               //pin 5
+    #define capTouchLED 5                 //pin 11
+    
 /*
  * Define IMU global variables & object
  */
+    #define IMULED 6
 
 /*
  * Define encoder global variables/object 
@@ -27,6 +28,8 @@
      
     #define SS_SWITCH 24                    //Not yet sure what this is required for
     //#define SS_NEOPIX 6                     //Required for the neopixel on the encoder board
+
+    #define encoderLED 7
     
     Adafruit_seesaw encoder;                //Initialize encoder object and an integer to assign the position to 
     
@@ -38,6 +41,7 @@
 /*
  * Define 7-seg global variables & object
  */
+    #define SEVSEG_ADDR 0x70                //define global I2C address of 7seg backpack 
     Adafruit_7segment sevSeg = Adafruit_7segment();   //initialize sevSeg object to interact with I2C backpack 
     int scoreCount = 0;                               //score to display and increment as user successfully inputs
   
@@ -49,9 +53,17 @@ void setup() {
   Serial.begin(9600);                 //Baud rate may need to go to 115200
   while(!Serial) delay(10);           //Wait for serial monitor to initialize
 
+
+  /*
+   * Initialize cap. touch Pins
+  */
+      pinMode(capTouchInput, INPUT);
+      pinMode(capTouchLED, OUTPUT);
+
   /*
    * Initialize IMU object & interrupts
   */
+      pinMode(IMULED, OUTPUT);
   
   /*
    * Initialize encoder object & interrupts
@@ -77,6 +89,7 @@ void setup() {
        encoder.enableEncoderInterrupt();
   
        Serial.println("Encoder Interrupt Initialized.");
+       pinMode(encoderLED, OUTPUT);
 
   /*
    * Initialize 7-seg object 
@@ -99,23 +112,35 @@ void loop() {
   switch(randomNumber) {                           //Decide what to do with random number 
     
     case 1:             //Bait It
+      
+      digitalWrite(capTouchLED, HIGH);            //Indicate that the user must input cap. touch 
+      
       for(int i = 0; i < inputWindowDec; i++) {
-        /*if(readCapTouch()) {
+        if(readCapTouch()) {
           break;
-        }*/
+        }
         delay(1);                                   // This is not a perfect timer, but it'll be close. 
       }
 
-      seven_seg(1);                                 //Increment counter
+      
+      digitalWrite(capTouchLED, LOW);               //turn off indicator led  
+      seven_seg(true);                              //Increment counter
       break;
+      
     case 2:             //Cast It
       
-      
+      digitalWrite(IMULED, HIGH);
+
+
+      digitalWrite(IMULED, LOW);               //turn off indicator led  
       seven_seg(1);                                 //Increment counter
       break;
     case 3:             //Reel It 
+      
+      digitalWrite(encoderLED, HIGH);
 
 
+      digitalWrite(encoderLED, LOW);               //turn off indicator led  
       seven_seg(1);                                 //Increment counter
       break;
     default:            //Should never reach default, but you know. 
@@ -127,6 +152,20 @@ void loop() {
   
   delay(100);                                     //Delay 100ms before generating a new random action
    
+}
+
+
+/* readCapTouch()
+ * Params: None
+ * Retrns: Bool indicating whether the cap. touch was triggered
+ * 
+ */
+bool readCapTouch(){                         
+  
+  if(digitalRead(capTouchInput) == LOW){
+    return true;
+  }
+  return false; 
 }
 
 /* readReel()
