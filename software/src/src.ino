@@ -8,6 +8,14 @@
  */
  
 #include "Adafruit_seesaw.h"            //Seesaw library, used for function calls to interact with encoder
+#include <Adafruit_LEDBackpack.h>       //Used to communicate I2C to Adafruit's "backpack" for 7-seg display. 
+ /*
+  * Define cap-touch global variables 
+  */
+  
+/*
+ * Define IMU global variables & object
+ */
 
 /*
  * Define encoder global variables/object 
@@ -25,18 +33,12 @@
     int8_t fullTurn = 24;                   //One full rotation of the encoder is 24 steps. 
 
 /*
- * Define IMU global variables & object
- */
-
-/*
  * Define 7-seg global variables & object
  */
-
- /*
-  * Define cap-touch global variables 
-  */
-
-
+    #define cap_touch_input 3               //pin 5
+    #define cap_touch_LED 5                 //pin 11
+    Adafruit_7segment sevSeg = Adafruit_7segment();   //initialize sevSeg object to interact with I2C backpack 
+  
   int inputWindow = 1000;                  //Start the input window length at 1000ms, which is the time allowed for a user input. Decreases with every iteration. 
   int inputWindowDec = 5;                  //integer to decrement the inputWindow by each iteration 
 
@@ -45,6 +47,10 @@ void setup() {
   Serial.begin(9600);                 //Baud rate may need to go to 115200
   while(!Serial) delay(10);           //Wait for serial monitor to initialize
 
+  /*
+   * Initialize IMU object & interrupts
+  */
+  
   /*
    * Initialize encoder object & interrupts
   */
@@ -69,10 +75,6 @@ void setup() {
        encoder.enableEncoderInterrupt();
   
        Serial.println("Encoder Interrupt Initialized.");
-
-  /*
-   * Initialize IMU object & interrupts
-  */
 
   /*
    * Initialize 7-seg object 
