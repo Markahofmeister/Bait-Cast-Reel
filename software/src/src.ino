@@ -38,6 +38,7 @@
 
 
   int inputWindow = 1000;                  //Start the input window length at 1000ms, which is the time allowed for a user input. Decreases with every iteration. 
+  int inputWindowDec = 5;                  //integer to decrement the inputWindow by each iteration 
 
 void setup() {
 
@@ -89,10 +90,15 @@ void loop() {
    */
   int randomNumber = floor(random(1,4));           //generates a random number in the range of 1 to 3
 
-  switch(randomNumber) {
+  switch(randomNumber) {                           //Decide what to do with random number 
     
     case 1:             //Bait It
-      
+      for(int i = 0; i < inputWindowDec; i++) {
+        /*if(readCapTouch()) {
+          break;
+        }*/
+        delay(1);                                   // This is not a perfect timer, but it'll be close. 
+      }
       break;
     case 2:             //Cast It
 
@@ -105,6 +111,10 @@ void loop() {
       break;
   }
 
+  inputWindow -= inputWindowDec;                  //Decrement inputWindow by inputWindowDec value (ms)
+  
+  delay(100);                                     //Delay 100ms before generating a new random action
+   
 }
 
 /* readReel()
