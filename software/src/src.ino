@@ -9,6 +9,8 @@
  
 #include "Adafruit_seesaw.h"            //Seesaw library, used for function calls to interact with encoder
 #include <Adafruit_LEDBackpack.h>       //Used to communicate I2C to Adafruit's "backpack" for 7-seg display. 
+#include <Adafruit_Sensor.h>
+#include <Adafruit_MMA8451.h>
  
  /*
   * Define cap-touch global variables 
@@ -20,6 +22,7 @@
  * Define IMU global variables & object
  */
     #define IMULED 6
+    Adafruit_MMA8451 IMU = Adafruit_MMA8451();
 
 /*
  * Define encoder global variables/object 
@@ -64,6 +67,7 @@ void setup() {
    * Initialize IMU object & interrupts
   */
       pinMode(IMULED, OUTPUT);
+      IMU.setRange(MMA8451_RANGE_2_G);
   
   /*
    * Initialize encoder object & interrupts
@@ -113,35 +117,57 @@ void loop() {
     
     case 1:             //Bait It
       
-      digitalWrite(capTouchLED, HIGH);            //Indicate that the user must input cap. touch 
-      
-      for(int i = 0; i < inputWindowDec; i++) {
-        if(readCapTouch()) {
-          break;
-        }
-        delay(1);                                   // This is not a perfect timer, but it'll be close. 
+      //call cap_touch function
+      digitalWrite(capTouchLED,HIGH);// associated LED turns on 
+      //send out audio command via talkie
+      bool success_val;
+      unsigned int current_time = millis(); //gets the number of milliseconds that program has been running
+
+      while((millis()-current_time) <= inputWindow){//differencing time to see amount of time passed 
+          success_val = readCapTouch();
+
+          if(success_val){
+            break;
+          }
       }
 
-      
-      digitalWrite(capTouchLED, LOW);               //turn off indicator led  
-      seven_seg(true);                              //Increment counter
+      digitalWrite(capTouchLED, LOW); //turn LED off
+      seven_seg(success_val);                              //Increment counter and display
       break;
       
     case 2:             //Cast It
       
       digitalWrite(IMULED, HIGH);
+      unsigned long current_time2 = millis();
+      bool success_val2;
 
+      while((millis()-current_time2) <= inputWindow){
 
-      digitalWrite(IMULED, LOW);               //turn off indicator led  
-      seven_seg(1);                                 //Increment counter
+        success_val2 = readIMU();
+        if(success_val2){
+          break;
+        }
+      }
+
+      digitalWrite(IMULED, LOW);//turn off indicator led  
+      seven_seg(success_val2);//Increment counter
       break;
     case 3:             //Reel It 
       
       digitalWrite(encoderLED, HIGH);
+      unsigned long current_time3 = millis();
+      bool success_val3;
 
+      while((millis()-current_time3) <= inputWindow){
+        success_val3 = readReel();
 
-      digitalWrite(encoderLED, LOW);               //turn off indicator led  
-      seven_seg(1);                                 //Increment counter
+        if(success_val3){
+          break;
+        }
+      }
+
+      digitalWrite(encoderLED, LOW); //turn off indicator led  
+      seven_seg(success_val3);      //Increment counter
       break;
     default:            //Should never reach default, but you know. 
 
@@ -161,10 +187,11 @@ void loop() {
  * 
  */
 bool readCapTouch(){                         
-  
-  if(digitalRead(capTouchInput) == LOW){
-    return true;
-  }
+    if(digitalRead(capTouchInput) == LOW){
+      return true;
+    }
+
+  //return false no input detected 
   return false; 
 }
 
@@ -196,6 +223,26 @@ bool readReel() {
   
   return fullRotation;
 
+}
+/* readIMU()
+ * Params: None
+ * Retrns: Bool indicating whether the IMU has detected an input
+ * 
+ * Function to determine if the IMU has detected an input
+ * 
+ */
+bool readIMU(){//function for IMU
+  
+  // Get a new sensor event
+  sensors_event_t event; 
+  IMU.getEvent(&event);
+  uint8_t orientation = IMU.getOrientation();
+
+  if(orientation < 9 || orientation < 10){
+    return true;
+    }
+  //no input detected
+  return false;
 }
 
 
