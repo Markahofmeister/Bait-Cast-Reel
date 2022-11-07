@@ -142,7 +142,7 @@ void loop() {
       
     case 2:             //Cast It
       
-     digitalWrite(IMULED, HIGH);
+     /*digitalWrite(IMULED, HIGH);
       unsigned long current_time2 = millis();
       bool success_val2 = false;
 
@@ -156,11 +156,11 @@ void loop() {
       }
 
       digitalWrite(IMULED, LOW);//turn off indicator led  
-      seven_seg(success_val2);//Increment counter  
+      seven_seg(success_val2);//Increment counter  */
       break;
     case 3:             //Reel It 
       
-      /*digitalWrite(encoderLED, HIGH);
+      digitalWrite(encoderLED, HIGH);
       unsigned long current_time3 = millis();
       bool success_val3 = false;
 
@@ -173,7 +173,7 @@ void loop() {
       }
 
       digitalWrite(encoderLED, LOW); //turn off indicator led  
-      seven_seg(success_val3);      //Increment counter   */
+      seven_seg(success_val3);      //Increment counter   
       break;
     default:            //Should never reach default, but you know. 
 
@@ -276,6 +276,19 @@ void seven_seg(bool success_val){
     sevSeg.print(scoreCount);
     sevSeg.blinkRate(1);                      //Blinks the 7seg to indicate game over. 0 = no blink, 1,2,3 = varied blink rates. 
     sevSeg.writeDisplay();
-    delay(10);                                //Might have to adjust delays
+    deadLoop();
   }
+}
+
+/**
+ * dead Loop to prevent incrementing of 7-seg and LED lighting after user failure
+ * params: none
+ * returns: none
+ */
+void deadLoop() {
+
+  while(1) {
+    
+  }
+  
 }
