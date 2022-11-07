@@ -48,7 +48,7 @@
     Adafruit_7segment sevSeg = Adafruit_7segment();   //initialize sevSeg object to interact with I2C backpack 
     int scoreCount = 0;                               //score to display and increment as user successfully inputs
   
-  int inputWindow = 1000;                  //Start the input window length at 1000ms, which is the time allowed for a user input. Decreases with every iteration. 
+  int inputWindow = 5000;                  //Start the input window length at 1000ms, which is the time allowed for a user input. Decreases with every iteration. 
   int inputWindowDec = 5;                  //integer to decrement the inputWindow by each iteration 
 
 void setup() {
@@ -56,6 +56,7 @@ void setup() {
   Serial.begin(9600);                 //Baud rate may need to go to 115200
   while(!Serial) delay(10);           //Wait for serial monitor to initialize
 
+  
 
   /*
    * Initialize cap. touch Pins
@@ -67,7 +68,11 @@ void setup() {
    * Initialize IMU object & interrupts
   */
       pinMode(IMULED, OUTPUT);
+      if(!IMU.begin()) {
+        while(1);
+      }
       IMU.setRange(MMA8451_RANGE_2_G);
+ 
   
   /*
    * Initialize encoder object & interrupts
@@ -84,15 +89,15 @@ void setup() {
     
       Serial.println("Turning on Interrupt pin.");
       delay(10);
-      encoder.setGPIOInterrupts((uint32_t)1<<SS_SWITCH, 1);     
+      //encoder.setGPIOInterrupts((uint32_t)1<<SS_SWITCH, 1);     
       /*
        * What does this do? This seems like we're masking the 24th bit of a register. 
        * There isn't much documentation on this. I think the interrupt is active low. I'm not sure to change the threshold on which it fires. 
        * It seems to fire on enery rotation 
        */
-       encoder.enableEncoderInterrupt();
+       //encoder.enableEncoderInterrupt();
   
-       Serial.println("Encoder Interrupt Initialized.");
+       //Serial.println("Encoder Interrupt Initialized.");
        pinMode(encoderLED, OUTPUT);
 
   /*
@@ -116,11 +121,11 @@ void loop() {
   switch(randomNumber) {                           //Decide what to do with random number 
     
     case 1:             //Bait It
-      
+      /*
       //call cap_touch function
       digitalWrite(capTouchLED,HIGH);// associated LED turns on 
       //send out audio command via talkie
-      bool success_val;
+      bool success_val = false;
       unsigned int current_time = millis(); //gets the number of milliseconds that program has been running
 
       while((millis()-current_time) <= inputWindow){//differencing time to see amount of time passed 
@@ -132,31 +137,32 @@ void loop() {
       }
 
       digitalWrite(capTouchLED, LOW); //turn LED off
-      seven_seg(success_val);                              //Increment counter and display
+      seven_seg(success_val);                              //Increment counter and display    */
       break;
       
     case 2:             //Cast It
       
-      digitalWrite(IMULED, HIGH);
+     digitalWrite(IMULED, HIGH);
       unsigned long current_time2 = millis();
-      bool success_val2;
+      bool success_val2 = false;
 
       while((millis()-current_time2) <= inputWindow){
 
         success_val2 = readIMU();
+        
         if(success_val2){
           break;
         }
       }
 
       digitalWrite(IMULED, LOW);//turn off indicator led  
-      seven_seg(success_val2);//Increment counter
+      seven_seg(success_val2);//Increment counter  
       break;
     case 3:             //Reel It 
       
-      digitalWrite(encoderLED, HIGH);
+      /*digitalWrite(encoderLED, HIGH);
       unsigned long current_time3 = millis();
-      bool success_val3;
+      bool success_val3 = false;
 
       while((millis()-current_time3) <= inputWindow){
         success_val3 = readReel();
@@ -167,12 +173,16 @@ void loop() {
       }
 
       digitalWrite(encoderLED, LOW); //turn off indicator led  
-      seven_seg(success_val3);      //Increment counter
+      seven_seg(success_val3);      //Increment counter   */
       break;
     default:            //Should never reach default, but you know. 
 
       break;
   }
+
+  /*scoreCount++;
+  sevSeg.print(scoreCount);
+  sevSeg.writeDisplay();*/
 
   inputWindow -= inputWindowDec;                  //Decrement inputWindow by inputWindowDec value (ms)
   
@@ -209,7 +219,7 @@ bool readReel() {
   encoderPos = encoder.getEncoderPosition();    //find new encoder position 
 
   if(encoderPos < lastPos) {      //prevent a backwards rotation
-    Serial.println("Enter backwards rotation conditional");
+    //Serial.println("Enter backwards rotation conditional");
     encoderPos = lastPos;
   }
 
@@ -236,9 +246,10 @@ bool readIMU(){//function for IMU
   // Get a new sensor event
   sensors_event_t event; 
   IMU.getEvent(&event);
-  uint8_t orientation = IMU.getOrientation();
+  digitalWrite(capTouchLED, HIGH);
+  uint8_t orientation = event.acceleration.z;
 
-  if(orientation < 9 || orientation < 10){
+  if(orientation > 15){
     return true;
     }
   //no input detected
