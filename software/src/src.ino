@@ -291,6 +291,15 @@ void seven_seg(bool success_val){
     scoreCount++;                             //increment count variable   
     sevSeg.print(scoreCount);
     sevSeg.writeDisplay();
+    if (scoreCount >= 99) {                   //User has won. 
+      while (1) {
+        sevSeg.blinkRate(1);                  // Indicate winning with alternating between blinking and not blinking 
+        delay(2000);
+        sevSeg.blinkRate(0);
+        delay(2000);
+      }
+      deadLoop();                             //Should never reach here, but you know. 
+    }
     delay(10);                                //Might have to adjust delays
 
   }
