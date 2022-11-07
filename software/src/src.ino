@@ -51,6 +51,18 @@
   int inputWindow = 5000;                  //Start the input window length at 1000ms, which is the time allowed for a user input. Decreases with every iteration. 
   int inputWindowDec = 5;                  //integer to decrement the inputWindow by each iteration 
 
+  /**
+   * Define Audio global variables/pins
+   */
+   #define audioOut 9
+   #define audioOut_LOW 10
+   #define baitFreq 100
+   #define castFreq 500
+   #define reelFreq 1000
+   uint8_t audioDuration = 1000;
+   
+   
+
 void setup() {
 
   Serial.begin(9600);                 //Baud rate may need to go to 115200
@@ -106,6 +118,13 @@ void setup() {
       sevSeg.begin(SEVSEG_ADDR);
       sevSeg.print(scoreCount);
       sevSeg.writeDisplay();
+
+  /**
+   * Initialize audio pins
+   */
+      pinMode(audioOut, OUTPUT);
+      pinMode(audioOut_LOW, OUTPUT);
+      digitalWrite(audioOut_LOW, LOW);
 }
 
 void loop() {
@@ -121,9 +140,10 @@ void loop() {
   switch(randomNumber) {                           //Decide what to do with random number 
     
     case 1:             //Bait It
-      /*
+      
       //call cap_touch function
-      digitalWrite(capTouchLED,HIGH);// associated LED turns on 
+      digitalWrite(capTouchLED,HIGH);             // associated LED turns on 
+      tone(audioOut, baitFreq, audioDuration);    //Play associated tone 
       //send out audio command via talkie
       bool success_val = false;
       unsigned int current_time = millis(); //gets the number of milliseconds that program has been running
@@ -137,12 +157,13 @@ void loop() {
       }
 
       digitalWrite(capTouchLED, LOW); //turn LED off
-      seven_seg(success_val);                              //Increment counter and display    */
+      seven_seg(success_val);                              //Increment counter and display    
       break;
       
     case 2:             //Cast It
       
      /*digitalWrite(IMULED, HIGH);
+      tone(audioOut, castFreq, audioDuration);            //Play associated tone
       unsigned long current_time2 = millis();
       bool success_val2 = false;
 
@@ -160,7 +181,8 @@ void loop() {
       break;
     case 3:             //Reel It 
       
-      digitalWrite(encoderLED, HIGH);
+     /* digitalWrite(encoderLED, HIGH);
+      tone(audioOut, reelFreq, audioDuration);          //Play associated tone
       unsigned long current_time3 = millis();
       bool success_val3 = false;
 
@@ -173,7 +195,7 @@ void loop() {
       }
 
       digitalWrite(encoderLED, LOW); //turn off indicator led  
-      seven_seg(success_val3);      //Increment counter   
+      seven_seg(success_val3);      //Increment counter   */
       break;
     default:            //Should never reach default, but you know. 
 
