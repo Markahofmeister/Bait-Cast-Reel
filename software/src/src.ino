@@ -1,8 +1,8 @@
 /**
  * File Name: src.ino 
- * Author: Mark Hofmeister 
+ * Author: Mark Hofmeister, Maya Román, John McDonough
  * Created: 10/25/2022
- * Last Modified: 10/30/2022
+ * Last Modified: 11/7/2022
  * 
  * Source code uploaded to Bait-Cast-Reel ATMEGA328p.
  */
@@ -11,7 +11,8 @@
 #include <Adafruit_LEDBackpack.h>       //Used to communicate I2C to Adafruit's "backpack" for 7-seg display. 
 #include <Adafruit_Sensor.h>
 #include <Adafruit_MMA8451.h>
- 
+#include <math.h>
+
  /*
   * Define cap-touch global variables 
   */
@@ -57,11 +58,9 @@
    #define audioOut 9
    #define audioOut_LOW 10
    #define baitFreq 100
-   #define castFreq 500
-   #define reelFreq 1000
-   uint8_t audioDuration = 1000;
-   
-   
+   #define castFreq 200
+   #define reelFreq 300
+   uint8_t audioDuration = 2000;   
 
 void setup() {
 
@@ -83,7 +82,7 @@ void setup() {
       if(!IMU.begin()) {
         while(1);
       }
-      IMU.setRange(MMA8451_RANGE_2_G);
+      IMU.setRange(MMA8451_RANGE_4_G);
  
   
   /*
@@ -94,23 +93,11 @@ void setup() {
         Serial.println("Couldn't find encoder on default address, trying again.");
         while(1) delay(10);
       }
-      Serial.println("Encoder initialized.");
     
       encoder.pinMode(SS_SWITCH, INPUT_PULLUP);     //Is this pullup pin native to the encoder module itself? Will a bare ATMEGA vs. Uno have problems with this?
       encoderPos =  encoder.getEncoderPosition();
-    
-      Serial.println("Turning on Interrupt pin.");
-      delay(10);
-      //encoder.setGPIOInterrupts((uint32_t)1<<SS_SWITCH, 1);     
-      /*
-       * What does this do? This seems like we're masking the 24th bit of a register. 
-       * There isn't much documentation on this. I think the interrupt is active low. I'm not sure to change the threshold on which it fires. 
-       * It seems to fire on enery rotation 
-       */
-       //encoder.enableEncoderInterrupt();
-  
-       //Serial.println("Encoder Interrupt Initialized.");
-       pinMode(encoderLED, OUTPUT);
+ 
+      pinMode(encoderLED, OUTPUT);
 
   /*
    * Initialize 7-seg object 
@@ -125,6 +112,21 @@ void setup() {
       pinMode(audioOut, OUTPUT);
       pinMode(audioOut_LOW, OUTPUT);
       digitalWrite(audioOut_LOW, LOW);
+  /**
+   * Check LEDs and audio
+   */
+      digitalWrite(capTouchLED,HIGH); 
+      digitalWrite(encoderLED,HIGH); 
+      digitalWrite(IMULED,HIGH); 
+//      tone(audioOut, baitFreq, audioDuration);
+//      delay(audioDuration);
+//      tone(audioOut, castFreq, audioDuration);
+//      delay(audioDuration);
+//      tone(audioOut, reelFreq, audioDuration);
+      delay(2000);
+      digitalWrite(capTouchLED,LOW); 
+      digitalWrite(encoderLED,LOW); 
+      digitalWrite(IMULED,LOW); 
 }
 
 void loop() {
@@ -135,15 +137,12 @@ void loop() {
    * 2 - Cast - calls readCast() function
    * 3 - Reel - calls readReel() function
    */
-  int randomNumber = floor(random(1,4));           //generates a random number in the range of 1 to 3
-
-  switch(randomNumber) {                           //Decide what to do with random number 
-    
-    case 1:             //Bait It
-      
+  int randomNumber = floor(random(1,4));           //generates a random number in the range of 1 to 3  
+   if(randomNumber == 1){
       //call cap_touch function
-      digitalWrite(capTouchLED,HIGH);             // associated LED turns on 
-      tone(audioOut, baitFreq, audioDuration);    //Play associated tone 
+      digitalWrite(capTouchLED,HIGH);              // associated LED turns on 
+      //tone(audioOut, baitFreq, audioDuration);    //Play associated tone 
+      //delay(audioDuration);
       //send out audio command via talkie
       bool success_val = false;
       unsigned int current_time = millis(); //gets the number of milliseconds that program has been running
@@ -158,13 +157,14 @@ void loop() {
 
       digitalWrite(capTouchLED, LOW); //turn LED off
       seven_seg(success_val);                              //Increment counter and display    
-      break;
+   } // end captouch if statement
+   else if(randomNumber == 2){             //Cast It
       
-    case 2:             //Cast It
-      
-     /*digitalWrite(IMULED, HIGH);
-      tone(audioOut, castFreq, audioDuration);            //Play associated tone
-      unsigned long current_time2 = millis();
+      digitalWrite(IMULED, HIGH);
+
+      //tone(audioOut, castFreq, audioDuration);            //Play associated tone
+      //delay(audioDuration);
+      unsigned int current_time2 = millis();
       bool success_val2 = false;
 
       while((millis()-current_time2) <= inputWindow){
@@ -177,12 +177,13 @@ void loop() {
       }
 
       digitalWrite(IMULED, LOW);//turn off indicator led  
-      seven_seg(success_val2);//Increment counter  */
-      break;
-    case 3:             //Reel It 
+      seven_seg(success_val2);//Increment counter  
+    } // end cast else if
+    else if(randomNumber == 3){             //Reel It 
       
-     /* digitalWrite(encoderLED, HIGH);
+      digitalWrite(encoderLED, HIGH);
       tone(audioOut, reelFreq, audioDuration);          //Play associated tone
+      delay(audioDuration);
       unsigned long current_time3 = millis();
       bool success_val3 = false;
 
@@ -195,21 +196,18 @@ void loop() {
       }
 
       digitalWrite(encoderLED, LOW); //turn off indicator led  
-      seven_seg(success_val3);      //Increment counter   */
-      break;
-    default:            //Should never reach default, but you know. 
-
-      break;
-  }
-
-  /*scoreCount++;
-  sevSeg.print(scoreCount);
-  sevSeg.writeDisplay();*/
+      seven_seg(success_val3);      //Increment counter  
+    } // end reel else if
+      
+    //default:            //Should never reach default, but you know. 
+    else{
+      while(1){
+      }
+    }
 
   inputWindow -= inputWindowDec;                  //Decrement inputWindow by inputWindowDec value (ms)
   
-  delay(100);                                     //Delay 100ms before generating a new random action
-   
+  delay(500);                                     //Delay 100ms before generating a new random action
 }
 
 
@@ -218,13 +216,21 @@ void loop() {
  * Retrns: Bool indicating whether the cap. touch was triggered
  * 
  */
-bool readCapTouch(){                         
+bool readCapTouch(){
+  int compare = 0;
+  bool capOut; 
+  
+  while(compare < 1000){                
     if(digitalRead(capTouchInput) == LOW){
-      return true;
+      capOut = true; 
+    }else if(digitalRead(capTouchInput) == HIGH){
+      capOut = false; 
+      break;
     }
-
-  //return false no input detected 
-  return false; 
+    delay(1);
+    compare ++;
+  }
+  return capOut;
 }
 
 /* readReel()
@@ -240,14 +246,14 @@ bool readReel() {
   bool fullRotation = false;                    //initialize return flag to false
   encoderPos = encoder.getEncoderPosition();    //find new encoder position 
 
-  if(encoderPos < lastPos) {      //prevent a backwards rotation
+  if(encoderPos > lastPos) {      //prevent a backwards rotation
     //Serial.println("Enter backwards rotation conditional");
     encoderPos = lastPos;
   }
 
-  int threshold = lastFullRot + fullTurn;     //Threshold to find a full rotation is the last full rotation threshold plus one full rotation
+  int threshold = lastFullRot - fullTurn;     //Threshold to find a full rotation is the last full rotation threshold minus one full rotation
   
-  if(encoderPos >= threshold) {               //If we have passed the threshold of rotation, set flag
+  if(encoderPos <= threshold) {               //If we have passed the threshold of rotation, set flag
     fullRotation = true;
     lastFullRot = encoderPos;               //Also update the lastFullRot
   }
@@ -268,10 +274,9 @@ bool readIMU(){//function for IMU
   // Get a new sensor event
   sensors_event_t event; 
   IMU.getEvent(&event);
-  digitalWrite(capTouchLED, HIGH);
-  uint8_t orientation = event.acceleration.z;
+  uint8_t zaccel = event.acceleration.z;
 
-  if(orientation > 15){
+  if(zaccel > 20){
     return true;
     }
   //no input detected
