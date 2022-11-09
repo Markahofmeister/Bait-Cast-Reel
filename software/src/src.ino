@@ -292,9 +292,19 @@ void seven_seg(bool success_val){
     sevSeg.print(scoreCount);
     sevSeg.writeDisplay();
     if (scoreCount >= 99) {                   //User has won. 
+      int winDuration = 1000;
       while (1) {
         sevSeg.blinkRate(1);                  // Indicate winning with alternating between blinking and not blinking 
-        delay(2000);
+        tone(audioOut, 200, winDuration);   //Indicate that the user has won with a tone trill.
+        delay(winDuration);
+        tone(audioOut, 400, winDuration);
+        delay(winDuration);
+        tone(audioOut, 600, winDuration);
+        delay(winDuration);
+        tone(audioOut, 800, winDuration);
+        delay(winDuration);
+        tone(audioOut, 1000, winDuration);
+        delay(winDuration);
         sevSeg.blinkRate(0);
         delay(2000);
       }
@@ -307,6 +317,20 @@ void seven_seg(bool success_val){
     sevSeg.print(scoreCount);
     sevSeg.blinkRate(1);                      //Blinks the 7seg to indicate game over. 0 = no blink, 1,2,3 = varied blink rates. 
     sevSeg.writeDisplay();
+
+    int failureDuration = 1000;
+    
+    tone(audioOut, 1000, failureDuration);   //Indicate that the user has failed with a tone trill.
+    delay(failureDuration);
+    tone(audioOut, 800, failureDuration);
+    delay(failureDuration);
+    tone(audioOut, 600, failureDuration);
+    delay(failureDuration);
+    tone(audioOut, 400, failureDuration);
+    delay(failureDuration);
+    tone(audioOut, 200, failureDuration);
+    delay(failureDuration);
+    
     deadLoop();
   }
 }
