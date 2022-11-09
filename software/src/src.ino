@@ -64,11 +64,6 @@
 
 void setup() {
 
-  Serial.begin(9600);                 //Baud rate may need to go to 115200
-  while(!Serial) delay(10);           //Wait for serial monitor to initialize
-
-  
-
   /*
    * Initialize cap. touch Pins
   */
@@ -141,8 +136,8 @@ void loop() {
    if(randomNumber == 1){
       //call cap_touch function
       digitalWrite(capTouchLED,HIGH);              // associated LED turns on 
-      //tone(audioOut, baitFreq, audioDuration);    //Play associated tone 
-      //delay(audioDuration);
+      tone(audioOut, baitFreq, audioDuration);    //Play associated tone 
+      delay(audioDuration);
       //send out audio command via talkie
       bool success_val = false;
       unsigned int current_time = millis(); //gets the number of milliseconds that program has been running
@@ -162,8 +157,8 @@ void loop() {
       
       digitalWrite(IMULED, HIGH);
 
-      //tone(audioOut, castFreq, audioDuration);            //Play associated tone
-      //delay(audioDuration);
+      tone(audioOut, castFreq, audioDuration);            //Play associated tone
+      delay(audioDuration);
       unsigned int current_time2 = millis();
       bool success_val2 = false;
 
@@ -246,14 +241,14 @@ bool readReel() {
   bool fullRotation = false;                    //initialize return flag to false
   encoderPos = encoder.getEncoderPosition();    //find new encoder position 
 
-  if(encoderPos > lastPos) {      //prevent a backwards rotation
+  if(encoderPos < lastPos) {      //prevent a backwards rotation
     //Serial.println("Enter backwards rotation conditional");
     encoderPos = lastPos;
   }
 
-  int threshold = lastFullRot - fullTurn;     //Threshold to find a full rotation is the last full rotation threshold minus one full rotation
+  int threshold = lastFullRot + fullTurn;     //Threshold to find a full rotation is the last full rotation threshold minus one full rotation
   
-  if(encoderPos <= threshold) {               //If we have passed the threshold of rotation, set flag
+  if(encoderPos >= threshold) {               //If we have passed the threshold of rotation, set flag
     fullRotation = true;
     lastFullRot = encoderPos;               //Also update the lastFullRot
   }
